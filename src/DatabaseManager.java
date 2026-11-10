@@ -29,7 +29,7 @@ public class DatabaseManager {
 
 
     // ==========================================
-    // RELATORIO MENSAL
+    // RELATÓRIO MENSAL
     // ==========================================
 
     // Cadastrar relatório mensal
@@ -56,6 +56,48 @@ public class DatabaseManager {
 
             return stmt.executeUpdate() > 0;
         }
+    }
+
+    // Buscar relatório mensal pelo mês e ano
+    public RelatorioMensal buscarRelatorioPorMes(int mes, int ano)
+            throws SQLException {
+
+        String sql = """
+                SELECT *
+                FROM relatorio_mensal
+                WHERE MONTH(data_referencia) = ?
+                AND YEAR(data_referencia) = ?
+                """;
+
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setInt(1, mes);
+            stmt.setInt(2, ano);
+
+            try (ResultSet resultado = stmt.executeQuery()) {
+
+                if (resultado.next()) {
+
+                    LocalDate data = resultado.getDate(
+                            "data_referencia").toLocalDate();
+
+                    RelatorioMensal relatorio = new RelatorioMensal(
+                            resultado.getInt("id"),
+                            data,
+                            resultado.getDouble("faturamento"),
+                            resultado.getDouble("comissao"),
+                            resultado.getDouble("margem_mensal"),
+                            resultado.getDouble("retirada_mensal"),
+                            resultado.getDouble("saldo")
+                    );
+
+                    return relatorio;
+                }
+            }
+        }
+
+        // Retorna null caso não encontre o relatório
+        return null;
     }
 
     // Consultar todos os relatórios
