@@ -58,7 +58,9 @@ public class AgroVision {
 
                     case 4:
 
-                        System.out.println("EXCLUIR RELATÓRIO");
+                        // Chama o método de atualização de relatório
+                        atualizarRelatorio(sc, db);
+
 
                         break;
 
@@ -269,6 +271,114 @@ public class AgroVision {
         } catch (SQLException e) {
 
             System.out.println("Erro ao listar relatórios: " + e.getMessage());
+
+        }
+    }
+    // ==========================================
+    // ATUALIZAR RELATÓRIO
+    // ==========================================
+    private static void atualizarRelatorio(Scanner sc, DatabaseManager db) {
+
+        System.out.println("\n===== ATUALIZAR RELATÓRIO =====");
+
+        // Recebe o período do relatório que será atualizado
+        System.out.print("Informe o ano desejado: ");
+        int ano = sc.nextInt();
+
+        System.out.print("Informe o mês desejado: ");
+        int mes = sc.nextInt();
+
+        // Valida o mês informado
+        if (mes < 1 || mes > 12) {
+            System.out.println("Mês inválido! Digite um mês entre 1 e 12.");
+            return;
+        }
+
+        // Busca o relatório no banco de dados
+        RelatorioMensal relatorio;
+
+        try {
+
+            relatorio = db.buscarRelatorioPorMes(mes, ano);
+
+        } catch (SQLException e) {
+
+            System.out.println("Erro ao buscar relatório: " + e.getMessage());
+            return;
+
+        }
+
+        // Verifica se o relatório existe
+        if (relatorio == null) {
+
+            System.out.println("Nenhum relatório encontrado para o período informado.");
+            return;
+
+        }
+
+        // Apresenta os dados atuais
+        System.out.println("\n===== DADOS ATUAIS =====");
+
+        System.out.println("Data de referência: " + relatorio.getDataReferencia());
+        System.out.println("Faturamento: R$ " + relatorio.getFaturamento());
+        System.out.println("Comissão: R$ " + relatorio.getComissao());
+        System.out.println("Margem mensal: " + relatorio.getMargemMensal() + "%");
+        System.out.println("Retirada mensal: R$ " + relatorio.getRetiradaMensal());
+        System.out.println("Saldo: R$ " + relatorio.getSaldo());
+
+        // Recebe os novos valores
+        sc.nextLine();
+
+        System.out.println("\n===== INFORME OS NOVOS VALORES =====");
+
+        System.out.print("Novo faturamento: R$ ");
+        double faturamento = Double.parseDouble(
+                sc.nextLine().replace(",", ".")
+        );
+
+        System.out.print("Nova comissão: R$ ");
+        double comissao = Double.parseDouble(
+                sc.nextLine().replace(",", ".")
+        );
+
+        System.out.print("Nova margem mensal (%): ");
+        double margem = Double.parseDouble(
+                sc.nextLine().replace(",", ".")
+        );
+
+        System.out.print("Nova retirada mensal: R$ ");
+        double retirada = Double.parseDouble(
+                sc.nextLine().replace(",", ".")
+        );
+
+        System.out.print("Novo saldo: R$ ");
+        double saldo = Double.parseDouble(
+                sc.nextLine().replace(",", ".")
+        );
+
+        // Atualiza os dados do objeto encontrado
+        relatorio.setFaturamento(faturamento);
+        relatorio.setComissao(comissao);
+        relatorio.setMargemMensal(margem);
+        relatorio.setRetiradaMensal(retirada);
+        relatorio.setSaldo(saldo);
+
+        // Envia as alterações para o banco de dados
+        try {
+
+            if (db.atualizarRelatorio(relatorio)) {
+
+                System.out.println("\nRelatório atualizado com sucesso!");
+
+            } else {
+
+                System.out.println("\nNão foi possível atualizar o relatório.");
+
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println("Erro ao atualizar relatório: " + e.getMessage());
 
         }
     }
